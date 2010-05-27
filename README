@@ -1,0 +1,10 @@
+This is the official SexpCode plug-in for WordPress. As of right now, it supports the following features:
+
+  * Functions without arguments
+  * Function composition
+  * Function iteration
+  * Backslash escaping
+  * Bun's special verbatim syntax
+  * The verbatim function
+
+New features will be added as #bbcode straightens out the SexpCode spec.

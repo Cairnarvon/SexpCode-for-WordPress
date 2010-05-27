@@ -3,7 +3,7 @@
 Plugin Name: SexpCode for WordPress
 Plugin URI: http://cairnarvon.rotahall.org/2010/05/25/towards-a-better-bbcode/
 Description: Enables the use of SexpCode in comments.
-Version: 1.0
+Version: 1.0.1
 Author: Koen Crolla
 Author URI: http://cairnarvon.rotahall.org/
 */
@@ -27,8 +27,8 @@ function sexpcode_translate($input)
                                'close' => '</span>',
                                'iter'  => false),
                   'sub' => array('open'  => '<sub>',
-                               'close' => '</sub>',
-                               'iter'  => true),
+                                 'close' => '</sub>',
+                                 'iter'  => true),
                   'sup' => array('open'  => '<sup>',
                                  'close' => '</sup>',
                                  'iter'  => true),
@@ -51,7 +51,10 @@ function sexpcode_translate($input)
                                         'iter'  => true),
                   'm' => array('open'  => '<pre>',
                                'close' => '</pre>',
-                               'iter'  => false));
+                               'iter'  => false),
+                  'tt' => array('open'  => '<pre>',
+                                'close' => '</pre>',
+                                'iter'  => false));
 
     $input = strtr($input, array('\\' => '&#92;',
                                  '\\{' => '&#123;',
@@ -67,27 +70,48 @@ function sexpcode_translate($input)
             if (($j = strpos($input, ' ', $i)) === false) return input;
             $expr = substr($input, $i + 1, $j - $i - 1);
 
-            $open = "";
-            $close = "";
+            if (preg_match('/^[^0-9a-zA-Z\s]+/', $expr) === 1) {
+                $j = strpos($input, ($expr . '}'));
+                $i = $j === false ? strlen($input) : $j + strlen($expr) + 1;
 
-            $subs = explode('.', $expr);
-            foreach ($subs as $sub) {
-                list($tag, $n) = explode('*', $sub, 2);
+            } else {
+                $open = "";
+                $close = "";
+                $verb = false;
 
-                if ($tags[$tag] !== null) {
-                    $n = $n === null || !$tags[$tag]['iter'] ? 1 : $n + 0;
-                    if ($n > 3) $n = 3;
+                $subs = explode('.', $expr);
+                foreach ($subs as $sub) {
+                    list($tag, $n) = explode('*', $sub, 2);
 
-                    while ($n-->0) {
-                        $open .= $tags[$tag]['open'];
-                        $close = $tags[$tag]['close'] . $close;
+                    if ($tags[$tag] !== null) {
+                        $n = $n === null || !$tags[$tag]['iter'] ? 1 : $n + 0;
+                        if ($n > 3) $n = 3;
+    
+                        while ($n-->0) {
+                            $open .= $tags[$tag]['open'];
+                            $close = $tags[$tag]['close'] . $close;
+                        }
+                    } elseif ($tag == "verbatim") {
+                        $verb = true;
+                    } else return $input;
+                }
+    
+                $out .= substr($input, $k, $i - $k) . $open;
+                $closers[] = $close;
+                $k = $j + 1;
+
+                if ($verb) {
+                    $verb = 0;
+                    while ($verb >= 0 && $i < strlen($input)) {
+                        ++$i;
+                        if ($input[$i] == '{')
+                            ++$verb;
+                        elseif ($input[$i] == '}')
+                            --$verb;
                     }
-                } else return $input;
+                    continue;
+                }
             }
-
-            $out .= substr($input, $k, $i - $k) . $open;
-            $closers[] = $close;
-            $k = $j + 1;
 
         } elseif ($input[$i] == '}') {
             if (($j = count($closers)) < 1) return $input;
