@@ -116,7 +116,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
 
                 $args = explode(' ', $args, $tags[$func]['arity']);
                 $o = $tags[$func]['open'];
-                $c = $tags[$func]['close'] . $close;
+                $c = $tags[$func]['close'];
 
                 for ($i = 1; $i <= $tags[$func]['arity']; ++$i)
                     $o = str_replace('%' . $i . '%', $args[$i - 1], $o);
@@ -176,7 +176,10 @@ function sexpcode_parse_sexp($string, $offset, $tags)
         ++$i;
     }
 
-    return array($ret . substr($string, $offset) . $close, $offset);
+    
+    /* User omitted closing braces; close his tags. */
+
+    return array($ret . substr($string, $offset) . $close, $eos);
 }
 
 
