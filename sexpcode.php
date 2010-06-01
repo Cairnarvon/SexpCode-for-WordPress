@@ -3,7 +3,7 @@
 Plugin Name: SexpCode for WordPress
 Plugin URI: http://cairnarvon.rotahall.org/2010/05/25/towards-a-better-bbcode/
 Description: Enables the use of SexpCode in comments.
-Version: 1.1.1
+Version: 1.2
 Author: Koen Crolla
 Author URI: http://cairnarvon.rotahall.org/
 */
@@ -75,7 +75,89 @@ $sexpcode_tags =
                           'iter'  => false,
                           'arity' => 1));
 
-function sexpcode_parse_sexp($string, $offset)
+
+function sexpcode_get_tags($expr, $defs)
+{
+    /* sexpcode_get_tags :: String -> (String, String, Boolean) */
+
+    global $sexpcode_tags;
+    $funcs = array();
+    $open = $close = "";
+    $verbatim = false;
+
+    for ($i = $j = $n = 0; $i < strlen($expr); ++$i) {
+        switch ($expr[$i]) {
+        case '.':
+            if ($n == 0) {
+                $funcs[] = substr($expr, $j, $i - $j);
+                $j = $i + 1;
+            }
+            break;
+        case '{':
+            ++$n;
+            break;
+        case '}':
+            --$n;
+            break;
+        }
+    } 
+    $funcs[] = substr($expr, $j);
+
+    foreach ($funcs as $func) {
+        @list($func, $iter) = explode('*', $func);
+        $iter = $iter === null ? 1 : floor($iter);
+
+        $o = $c = "";
+        $alias = false;
+
+        if ($func[0] == '{') {
+            /* Higher-arity function (or pretender) */
+
+            $func = substr($func, 1, -1);
+            list($func, $args) = explode(' ', $func, 2);
+            if (!array_key_exists($func, $sexpcode_tags))
+                return array("", -1);
+
+            $args = explode(' ', $args, $sexpcode_tags[$func]['arity']);
+            $o = $sexpcode_tags[$func]['open'];
+            $c = $sexpcode_tags[$func]['close'];
+
+            for ($i = 1; $i <= $sexpcode_tags[$func]['arity']; ++$i)
+                $o = str_replace('%' . $i . '%', $args[$i - 1], $o);
+
+        } elseif (array_key_exists($func, $defs)) {
+            /* Function alias */
+
+            list($o, $c, $verbatim) = $defs[$func];
+            $alias = true;
+
+        } elseif (array_key_exists($func, $sexpcode_tags)) {
+            /* Simple function (or pretender) */
+
+            $o = $sexpcode_tags[$func]['open'];
+            $c = $sexpcode_tags[$func]['close'];
+
+            if ($sexpcode_tags[$func]['arity'] > 0)
+                for ($i = 1; $i <= $sexpcode_tags[$func]['arity']; ++$i)
+                    $o = str_replace('%' . $i . '%', '', $o);
+
+        } else return false;
+        
+        $iter = min($iter, !$alias && $sexpcode_tags[$func]['iter'] ? 3
+                                                                    : 1);
+        while ($iter-->0) {
+            $open .= $o;
+            $close = $c . $close;
+        }
+
+        if ($func == 'verbatim') $verbatim = true;
+    }
+
+    return array($open, $close, $verbatim);
+}
+
+
+function sexpcode_parse_sexp($string, $offset, $defs)
 {
     /* sexpcode_parse_sexp :: String -> Int -> Array -> (String, Int) */
 
@@ -120,6 +202,40 @@ function sexpcode_parse_sexp($string, $offset)
     }
 
 
+    /* Function definition */
+
+    if ($expr == "define") {
+        $i = $offset;
+        while ($i < $eos && $string[$i] !== ' ')
+            ++$i;
+        if ($i == $eos) return array("", 0);
+
+        $alias = substr($string, $offset, $i - $offset);
+
+        ++$i;
+        $offset = $i;
+        $n = 0;
+        while ($i < $eos) {
+            if ($string[$i] == '{')
+                ++$n;
+            elseif ($string[$i] == '}') {
+                if ($n == 0) break;
+                --$n;
+            }
+            ++$i;
+        }
+        if ($i == $eos) return array("", 0);
+
+        $expr = substr($string, $offset, $i - $offset);
+        $offset = $i + 1;
+
+        if (($defs[$alias] = sexpcode_get_tags($expr, &$defs)) === false)
+            return array("", -1);
+
+        return array("", $offset);
+    }
+
+
     $open = $close = "";
     $verbatim = false;
 
@@ -147,75 +263,12 @@ function sexpcode_parse_sexp($string, $offset)
         }
 
     } else {
+        $t = sexpcode_get_tags($expr, &$defs);
 
-        /* Normal function syntax; might be compound, iterated. */
-
-        $funcs = array();
-        for ($i = $j = $n = 0; $i < strlen($expr); ++$i) {
-            switch ($expr[$i]) {
-            case '.':
-                if ($n == 0) {
-                    $funcs[] = substr($expr, $j, $i - $j);
-                    $j = $i + 1;
-                }
-                break;
-            case '{':
-                ++$n;
-                break;
-            case '}':
-                --$n;
-                break;
-            }
-        } 
-        $funcs[] = substr($expr, $j);
-
-        foreach ($funcs as $func) {
-            @list($func, $iter) = explode('*', $func);
-            $iter = $iter === null ? 1 : floor($iter);
-
-            $o = $c = "";
-
-            if ($func[0] == '{') {
-                /* Higher-arity function (or pretender) */
-
-                $func = substr($func, 1, -1);
-                list($func, $args) = explode(' ', $func, 2);
-                if (!array_key_exists($func, $sexpcode_tags))
-                    return array("", -1);
-
-                $args = explode(' ', $args, $sexpcode_tags[$func]['arity']);
-                $o = $sexpcode_tags[$func]['open'];
-                $c = $sexpcode_tags[$func]['close'];
-
-                for ($i = 1; $i <= $sexpcode_tags[$func]['arity']; ++$i)
-                    $o = str_replace('%' . $i . '%', $args[$i - 1], $o);
-
-            } else {
-                /* Simple function (or pretender) */
-
-                if (!array_key_exists($func, $sexpcode_tags))
-                    return array("", -1);
-
-                $o = $sexpcode_tags[$func]['open'];
-                $c = $sexpcode_tags[$func]['close'];
-
-                if ($sexpcode_tags[$func]['arity'] > 0)
-                    for ($i = 1; $i <= $sexpcode_tags[$func]['arity']; ++$i)
-                        $o = str_replace('%' . $i . '%', '', $o);
-            }
-            
-            $iter = min($iter, $sexpcode_tags[$func]['iter'] ? 3 : 1);
-            while ($iter > 0) {
-                $open .= $o;
-                $close = $c . $close;
-                --$iter;
-            }
-
-            if ($func == 'verbatim') $verbatim = true;
-
-        }
-
+        if ($t === false) return array("", -1);
+        list($open, $close, $verbatim) = $t;
     }
+
 
     $ret = $open;
     $i = $offset;
@@ -235,7 +288,7 @@ function sexpcode_parse_sexp($string, $offset)
         case '{':
             if (!$verbatim) {
                 $ret .= substr($string, $offset, $i - $offset);
-                list($p, $i) = sexpcode_parse_sexp(&$string, $i);
+                list($p, $i) = sexpcode_parse_sexp(&$string, $i, &$defs);
 
                 if ($i < 0) return array("", -1);
 
@@ -268,6 +321,8 @@ function sexpcode_translate($input)
     $out = "";
     $eos = strlen($input);
 
+    $defs = array();
+
     while ($i < $eos) {
         $j = strpos($input, '{', $i);
 
@@ -279,7 +334,7 @@ function sexpcode_translate($input)
         $out .= substr($input, $i, $j - $i);
         $i = $j;
 
-        list($parsed, $i) = sexpcode_parse_sexp(&$input, $i);
+        list($parsed, $i) = sexpcode_parse_sexp(&$input, $i, &$defs);
         if ($i < 0) return $input;
         
         $out .= $parsed;

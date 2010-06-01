@@ -91,6 +91,25 @@ $tests[] = array("{b \\}}",
 $tests[] = array("\\\\{b a\\}",
                  "&#92;<b>a&#125;</b>");
 
+$tests[] = array("{define alpha b.i.s.u}{alpha expert}",
+                 "<b><i><s><u>expert</u></s></i></b>");
+$tests[] = array("{b bold} {define b i}{b actually italic}",
+                 "<b>bold</b> <i>actually italic</i>");
+$tests[] = array(" {define verbatim verbatim.b}{verbatim {test}}",
+                 " <b>{test}</b>");
+$tests[] = array("{define a b}{a alpha}{define a i}{a beta}",
+                 "<b>alpha</b><i>beta</i>");
+$tests[] = array("{define itsup sup*2}{b.itsup*2.i dangerous}",
+                 "<b><sup><sup><i>dangerous</i></sup></sup></b>");
+$tests[] = array("{define bious b.i.o.u.s}",
+                 "");
+$tests[] = array("{bious leaky}",
+                 "{bious leaky}");
+$tests[] = array("{define linky {url http://www.example.com}}{linky !}",
+                 '<a href="http://www.example.com">!</a>');
+$tests[] = array("{define see b.{code C}.verbatim}{see int buffa[] = {}}",
+                 '<b><code title="C code">int buffa[] = {}</code></b>');
+
 
 /* Add more tests here. */
 
