@@ -74,6 +74,12 @@ $tests[] = array("This is {b.u ultimate} {url http://example.com/ test} o" .
                  'com/">test</a> of <sup><sup><sup><u>expart</u></sup></s' .
                  'up></sup> <code title="C code">commenting</code>v.');
 
+$tests[] = array("{b {i nested}}",
+                 "<b><i>nested</i></b>");
+$tests[] = array("{quote {b Test} Hallu {i test}} Testing.",
+                 "<blockquote><b>Test</b> Hallu <i>test</i></blockquote> " .
+                 "Testing.");
+
 
 /* Add more tests here. */
 
