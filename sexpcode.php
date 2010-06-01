@@ -176,7 +176,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
         ++$i;
     }
 
-    return $ret . substr($string, $offset) . $close;
+    return array($ret . substr($string, $offset) . $close, $offset);
 }
 
 
