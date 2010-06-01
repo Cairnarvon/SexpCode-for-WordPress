@@ -3,12 +3,79 @@
 Plugin Name: SexpCode for WordPress
 Plugin URI: http://cairnarvon.rotahall.org/2010/05/25/towards-a-better-bbcode/
 Description: Enables the use of SexpCode in comments.
-Version: 1.1
+Version: 1.1.1
 Author: Koen Crolla
 Author URI: http://cairnarvon.rotahall.org/
 */
 
-function sexpcode_parse_sexp($string, $offset, $tags)
+$sexpcode_tags =
+    array('b' => array('open'  => '<b>',
+                       'close' => '</b>',
+                       'iter'  => false,
+                       'arity' => 0),
+          'i' => array('open'  => '<i>',
+                       'close' => '</i>',
+                       'iter'  => false,
+                       'arity' => 0),
+          'u' => array('open'  => '<u>',
+                       'close' => '</u>',
+                       'iter'  => false,
+                       'arity' => 0),
+          's' => array('open'  => '<s>',
+                       'close' => '</s>',
+                       'iter'  => false,
+                       'arity' => 0),
+          'o' => array('open'  => '<span style="text-decoration: overline' .
+                                  '">',
+                       'close' => '</span>',
+                       'iter'  => false,
+                       'arity' => 0),
+          'm' => array('open'  => '<pre>',
+                       'close' => '</pre>',
+                       'iter'  => false,
+                       'arity' => 0),
+          'tt' => array('open'  => '<pre>',
+                        'close' => '</pre>',
+                        'iter'  => false,
+                        'arity' => 0),
+          'sub' => array('open'  => '<sub>',
+                         'close' => '</sub>',
+                         'iter'  => true,
+                         'arity' => 0),
+          'sup' => array('open'  => '<sup>',
+                         'close' => '</sup>',
+                         'iter'  => true,
+                         'arity' => 0),
+          'quote' => array('open'  => '<blockquote>',
+                           'close' => '</blockquote>',
+                           'iter'  => true,
+                           'arity' => 0),
+          'spoiler' => array('open'  => '<span style="background: #000" o' .
+                                        'nmouseover="this.style.color=\'#' .
+                                        'FFF\';" onmouseout="this.style.c' .
+                                        'olor=this.style.backgroundColor=' .
+                                        '\'#000\'">',
+                             'close' => '</span>',
+                             'iter'  => false,
+                             'arity' => 0),
+          'verbatim' => array('open'  => '',
+                              'close' => '',
+                              'iter'  => false,
+                              'arity' => 0),
+          'blockquote' => array('open'  => '<blockquote>',
+                                'close' => '</blockquote>',
+                                'iter'  => true,
+                                'arity' => 0),
+          'url' => array('open'  => '<a href="%1%">',
+                         'close' => '</a>',
+                         'iter'  => false,
+                         'arity' => 1),
+          'code' => array('open'  => '<code title="%1% code">',
+                          'close' => '</code>',
+                          'iter'  => false,
+                          'arity' => 1));
+
+function sexpcode_parse_sexp($string, $offset)
 {
     /* sexpcode_parse_sexp :: String -> Int -> Array -> (String, Int) */
 
@@ -17,6 +84,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
     
     ++$offset;
     $eos = strlen($string);
+    global $sexpcode_tags;
 
 
     /* Retrieve the entire function expression first */
@@ -55,16 +123,17 @@ function sexpcode_parse_sexp($string, $offset, $tags)
     $open = $close = "";
     $verbatim = false;
 
-    if (array_key_exists($expr, $tags) && $tags[$expr]['arity'] > 0) {
+    if (array_key_exists($expr, $sexpcode_tags) &&
+        $sexpcode_tags[$expr]['arity'] > 0) {
 
         /* Simple expressions of >0-arity functions can use the special
          * argument syntax.
          */
 
-        $open = $tags[$expr]['open'];
-        $close = $tags[$expr]['close'];
+        $open = $sexpcode_tags[$expr]['open'];
+        $close = $sexpcode_tags[$expr]['close'];
 
-        for ($i = 1; $i <= $tags[$expr]['arity']; ++$i) {
+        for ($i = 1; $i <= $sexpcode_tags[$expr]['arity']; ++$i) {
             $j = $offset;
 
             while ($j < $eos && $string[$j] != ' ')
@@ -111,31 +180,31 @@ function sexpcode_parse_sexp($string, $offset, $tags)
 
                 $func = substr($func, 1, -1);
                 list($func, $args) = explode(' ', $func, 2);
-                if (!array_key_exists($func, $tags))
+                if (!array_key_exists($func, $sexpcode_tags))
                     return array("", -1);
 
-                $args = explode(' ', $args, $tags[$func]['arity']);
-                $o = $tags[$func]['open'];
-                $c = $tags[$func]['close'];
+                $args = explode(' ', $args, $sexpcode_tags[$func]['arity']);
+                $o = $sexpcode_tags[$func]['open'];
+                $c = $sexpcode_tags[$func]['close'];
 
-                for ($i = 1; $i <= $tags[$func]['arity']; ++$i)
+                for ($i = 1; $i <= $sexpcode_tags[$func]['arity']; ++$i)
                     $o = str_replace('%' . $i . '%', $args[$i - 1], $o);
 
             } else {
                 /* Simple function (or pretender) */
 
-                if (!array_key_exists($func, $tags))
+                if (!array_key_exists($func, $sexpcode_tags))
                     return array("", -1);
 
-                $o = $tags[$func]['open'];
-                $c = $tags[$func]['close'];
+                $o = $sexpcode_tags[$func]['open'];
+                $c = $sexpcode_tags[$func]['close'];
 
-                if ($tags[$func]['arity'] > 0)
-                    for ($i = 1; $i <= $tags[$func]['arity']; ++$i)
+                if ($sexpcode_tags[$func]['arity'] > 0)
+                    for ($i = 1; $i <= $sexpcode_tags[$func]['arity']; ++$i)
                         $o = str_replace('%' . $i . '%', '', $o);
             }
             
-            $iter = min($iter, $tags[$func]['iter'] ? 3 : 1);
+            $iter = min($iter, $sexpcode_tags[$func]['iter'] ? 3 : 1);
             while ($iter > 0) {
                 $open .= $o;
                 $close = $c . $close;
@@ -166,7 +235,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
         case '{':
             if (!$verbatim) {
                 $ret .= substr($string, $offset, $i - $offset);
-                list($p, $i) = sexpcode_parse_sexp($string, $i, $tags);
+                list($p, $i) = sexpcode_parse_sexp(&$string, $i);
 
                 if ($i < 0) return array("", -1);
 
@@ -188,72 +257,6 @@ function sexpcode_parse_sexp($string, $offset, $tags)
 
 function sexpcode_translate($input)
 {
-    $tags = array('b' => array('open'  => '<b>',
-                               'close' => '</b>',
-                               'iter'  => false,
-                               'arity' => 0),
-                  'i' => array('open'  => '<i>',
-                               'close' => '</i>',
-                               'iter'  => false,
-                               'arity' => 0),
-                  'u' => array('open'  => '<u>',
-                               'close' => '</u>',
-                               'iter'  => false,
-                               'arity' => 0),
-                  's' => array('open'  => '<s>',
-                               'close' => '</s>',
-                               'iter'  => false,
-                               'arity' => 0),
-                  'o' => array('open'  => '<span style="text-decoration: ' .
-                                          'overline">',
-                               'close' => '</span>',
-                               'iter'  => false,
-                               'arity' => 0),
-                  'm' => array('open'  => '<pre>',
-                               'close' => '</pre>',
-                               'iter'  => false,
-                               'arity' => 0),
-                  'tt' => array('open'  => '<pre>',
-                                'close' => '</pre>',
-                                'iter'  => false,
-                                'arity' => 0),
-                  'sub' => array('open'  => '<sub>',
-                                 'close' => '</sub>',
-                                 'iter'  => true,
-                                 'arity' => 0),
-                  'sup' => array('open'  => '<sup>',
-                                 'close' => '</sup>',
-                                 'iter'  => true,
-                                 'arity' => 0),
-                  'quote' => array('open'  => '<blockquote>',
-                                   'close' => '</blockquote>',
-                                   'iter'  => true,
-                                   'arity' => 0),
-                  'spoiler' => array('open'  => '<span style="background:' .
-                                                ' #000" onmouseover="this' .
-                                                '.style.color=\'#FFF\';" ' .
-                                                'onmouseout="this.style.c' .
-                                                'olor=this.style.backgrou' .
-                                                'ndColor=\'#000\'">',
-                                     'close' => '</span>',
-                                     'iter'  => false,
-                                     'arity' => 0),
-                  'verbatim' => array('open'  => '',
-                                      'close' => '',
-                                      'iter'  => false,
-                                      'arity' => 0),
-                  'blockquote' => array('open'  => '<blockquote>',
-                                        'close' => '</blockquote>',
-                                        'iter'  => true,
-                                        'arity' => 0),
-                  'url' => array('open'  => '<a href="%1%">',
-                                 'close' => '</a>',
-                                 'iter'  => false,
-                                 'arity' => 1),
-                  'code' => array('open'  => '<code title="%1% code">',
-                                  'close' => '</code>',
-                                  'iter'  => false,
-                                  'arity' => 1));
 
 
     $input = str_replace(array('\\',    '\{',     '\}'),
@@ -276,7 +279,7 @@ function sexpcode_translate($input)
         $out .= substr($input, $i, $j - $i);
         $i = $j;
 
-        list($parsed, $i) = sexpcode_parse_sexp($input, $i, $tags);
+        list($parsed, $i) = sexpcode_parse_sexp(&$input, $i);
         if ($i < 0) return $input;
         
         $out .= $parsed;
