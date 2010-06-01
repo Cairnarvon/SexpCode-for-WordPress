@@ -13,7 +13,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
     /* sexpcode_parse_sexp :: String -> Int -> Array -> (String, Int) */
 
     if ($string[$offset] != '{')
-        return array(0, -1); /* parser fuck-up, not syntax error */
+        return array("", -1); /* parser fuck-up, not syntax error */
     
     ++$offset;
     $eos = strlen($string);
@@ -29,12 +29,12 @@ function sexpcode_parse_sexp($string, $offset, $tags)
             ++$n;
             break;
         case '}':
-            if (--$n < 0) return array(0, -1);
+            if (--$n < 0) return array("", -1);
             break;
         }
         ++$i;
     }
-    if ($i == $eos) return array(0, -1);
+    if ($i == $eos) return array("", -1);
     $expr = substr($string, $offset, $i - $offset);
     $offset = $i + 1;
 
@@ -70,7 +70,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
             while ($j < $eos && $string[$j] != ' ')
                 ++$j;
 
-            if ($offset == $eos) return array(0, -1);
+            if ($offset == $eos) return array("", -1);
             $open = str_replace('%' . $i . '%',
                                 substr($string, $offset, $j - $offset),
                                 $open);
@@ -112,7 +112,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
                 $func = substr($func, 1, -1);
                 list($func, $args) = explode(' ', $func, 2);
                 if (!array_key_exists($func, $tags))
-                    return array(0, -1);
+                    return array("", -1);
 
                 $args = explode(' ', $args, $tags[$func]['arity']);
                 $o = $tags[$func]['open'];
@@ -125,7 +125,7 @@ function sexpcode_parse_sexp($string, $offset, $tags)
                 /* Simple function (or pretender) */
 
                 if (!array_key_exists($func, $tags))
-                    return array(0, -1);
+                    return array("", -1);
 
                 $o = $tags[$func]['open'];
                 $c = $tags[$func]['close'];
