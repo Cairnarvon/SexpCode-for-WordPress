@@ -259,7 +259,7 @@ function sexpcode_translate($input)
 {
 
 
-    $input = str_replace(array('\\',    '\{',     '\}'),
+    $input = str_replace(array('\\\\',    '\{',     '\}'),
                          array('&#92;', '&#123;', '&#125;'),
                          $input);
 

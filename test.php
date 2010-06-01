@@ -84,6 +84,13 @@ $tests[] = array("{b {i t}}",
 $tests[] = array("{u abc{b t}}",
                  "<u>abc<b>t</b></u>");
 
+$tests[] = array("\\{b escape!}",
+                 "&#123;b escape!}");
+$tests[] = array("{b \\}}",
+                 "<b>&#125;</b>");
+$tests[] = array("\\\\{b a\\}",
+                 "&#92;<b>a&#125;</b>");
+
 
 /* Add more tests here. */
 
