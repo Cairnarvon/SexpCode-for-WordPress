@@ -289,6 +289,6 @@ function sexpcode_translate($input)
     return $out;
 }
 
-add_filter('comment_text', 'sexpcode_translate', 5);
+add_filter('comment_text', 'sexpcode_translate', 50);
 
 ?>
