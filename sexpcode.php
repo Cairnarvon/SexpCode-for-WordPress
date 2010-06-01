@@ -165,11 +165,14 @@ function sexpcode_parse_sexp($string, $offset, $tags)
 
         case '{':
             if (!$verbatim) {
-                $ret .= substr($string, $offset, $i - $offset - 1);
+                $ret .= substr($string, $offset, $i - $offset);
                 list($p, $i) = sexpcode_parse_sexp($string, $i, $tags);
+
+                if ($i < 0) return array("", -1);
 
                 $ret .= $p;
                 $offset = $i;
+                --$i;
             } else ++$n;
             break;
         }

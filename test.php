@@ -79,6 +79,10 @@ $tests[] = array("{b {i nested}}",
 $tests[] = array("{quote {b Test} Hallu {i test}} Testing.",
                  "<blockquote><b>Test</b> Hallu <i>test</i></blockquote> " .
                  "Testing.");
+$tests[] = array("{b {i t}}",
+                 "<b><i>t</i></b>");
+$tests[] = array("{u abc{b t}}",
+                 "<u>abc<b>t</b></u>");
 
 
 /* Add more tests here. */
