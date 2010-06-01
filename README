@@ -2,3 +2,6 @@ This is the official SexpCode plug-in for WordPress.
 It implements the complete spec detailed at http://cairnarvon.rotahall.org/misc/sexpcode.html , except for the optional img function.
 
 New features will be added as #bbcode straightens out the SexpCode spec.
+
+
+To install this plug-in, simply upload sexpcode.php to your /wp-content/plugins/ folder and activate it from your WP Admin panel.
