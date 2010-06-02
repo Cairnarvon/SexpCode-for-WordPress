@@ -208,7 +208,7 @@ function sexpcode_parse_sexp($string, $offset, $defs)
         $i = $offset;
         while ($i < $eos && $string[$i] !== ' ')
             ++$i;
-        if ($i == $eos) return array("", 0);
+        if ($i == $eos) return array("", -1);
 
         $alias = substr($string, $offset, $i - $offset);
 
@@ -224,7 +224,7 @@ function sexpcode_parse_sexp($string, $offset, $defs)
             }
             ++$i;
         }
-        if ($i == $eos) return array("", 0);
+        if ($i == $eos) return array("", -1);
 
         $expr = substr($string, $offset, $i - $offset);
         $offset = $i + 1;
@@ -233,6 +233,19 @@ function sexpcode_parse_sexp($string, $offset, $defs)
             return array("", -1);
 
         return array("", $offset);
+    }
+
+    if ($expr == "undefine") {
+        $i = $offset;
+        while ($i < $eos && $string[$i] !== '}')
+            ++$i;
+        if ($i == $eos) return array("", -1);
+
+        $fun = substr($string, $offset, $i - $offset);
+        if (array_key_exists($fun, $defs))
+            unset($defs[$fun]);
+
+        return array("", $i + 1);
     }
 
 

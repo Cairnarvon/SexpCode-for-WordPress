@@ -109,6 +109,12 @@ $tests[] = array("{define linky {url http://www.example.com}}{linky !}",
                  '<a href="http://www.example.com">!</a>');
 $tests[] = array("{define see b.{code C}.verbatim}{see int buffa[] = {}}",
                  '<b><code title="C code">int buffa[] = {}</code></b>');
+$tests[] = array("{define b i}{b italics}{undefine b}{b bold}",
+                 '<i>italics</i><b>bold</b>');
+$tests[] = array("{define biou b.i.o.u}{undefine biou}{biou test}",
+                 '{define biou b.i.o.u}{undefine biou}{biou test}');
+$tests[] = array("{undefine b}{b test}",
+                 "<b>test</b>");
 
 
 /* Add more tests here. */
