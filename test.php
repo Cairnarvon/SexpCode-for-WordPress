@@ -60,12 +60,12 @@ $tests[] = array("{url http://example.com High arity!}",
 $tests[] = array("{{url http://rotahall.org} Equivalent.}",
                  '<a href="http://rotahall.org">Equivalent.</a>');
 $tests[] = array("This {url.b is relatively undefined}.",
-                 'This <a href=""><b>is relatively undefined</b></a>.');
+                 'This <a href="is"><b>relatively undefined</b></a>.');
 $tests[] = array(" {b.{url http://example.org/}.u composurl}.",
                  ' <b><a href="http://example.org/"><u>composurl</u></a><' .
                  '/b>.');
-$tests[] = array("{b.url.u c}",
-                 '<b><a href=""><u>c</u></a></b>');
+$tests[] = array("{b.url.u a c}",
+                 '<b><a href="a"><u>c</u></a></b>');
 
 $tests[] = array("This is {b.u ultimate} {url http://example.com/ test} o" .
                  "f {sup*30.u expart} {verbatim.{code C} commenting}{-*- " .
@@ -115,6 +115,16 @@ $tests[] = array("{define biou b.i.o.u}{undefine biou}{biou test}",
                  '{define biou b.i.o.u}{undefine biou}{biou test}');
 $tests[] = array("{undefine b}{b test}",
                  "<b>test</b>");
+
+$tests[] = array("{define link url}{link a b}",
+                 '<a href="a">b</a>');
+$tests[] = array("{define x url.code.b}{x a b c}",
+                 '<a href="a"><code title="b code"><b>c</b></code></a>');
+$tests[] = array("{define x url*2.sup*3.code}{x a b c d}",
+                 '<a href="a"><sup><sup><sup><code title="b code">c d</code></sup></sup></sup></a>');
+
+$tests[] = array('{b bold bold {u underline bold {i biu',
+                 '<b>bold bold <u>underline bold <i>biu</i></u></b>');
 
 
 /* Add more tests here. */
