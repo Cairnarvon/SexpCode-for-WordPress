@@ -117,15 +117,20 @@ function sexpcode_get_tags($expr, $defs)
 
             $func = substr($func, 1, -1);
             list($func, $args) = explode(' ', $func, 2);
-            if (!array_key_exists($func, $sexpcode_tags))
-                return array("", -1);
 
-            $arity = $sexpcode_tags[$func]['arity'];
+            if (array_key_exists($func, $sexpcode_tags)) {
+                $o = $sexpcode_tags[$func]['open'];
+                $c = $sexpcode_tags[$func]['close'];
+                $verbatim = false;
+                $arity = $sexpcode_tags[$func]['arity'];
+
+            } elseif (array_key_exists($func, $defs)) {
+                list($o, $c, $verbatim, $arity) = $defs[$func];
+                $alias = true;
+
+            } else return false;
 
             $args = explode(' ', $args, $arity);
-            $o = $sexpcode_tags[$func]['open'];
-            $c = $sexpcode_tags[$func]['close'];
-
 
             for ($i = 1; $i <= count($args); ++$i) {
                 $o = str_replace('%' . $i . '%', $args[$i - 1], $o);
@@ -162,8 +167,8 @@ function sexpcode_get_tags($expr, $defs)
         }
         
         $iter = min($iter, !$alias &&
-                           $sexpcode_tags[$func]['iter'] &&
-                           $arity == 0 ? 3 : 1);
+                            $arity == 0 &&
+                            $sexpcode_tags[$func]['iter'] ? 3 : 1);
 
         while ($iter-->0) {
             $open .= $o;

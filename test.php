@@ -125,6 +125,10 @@ $tests[] = array("{define x url*2.sup*3.code}{x a b c d}",
 
 $tests[] = array('{b bold bold {u underline bold {i biu',
                  '<b>bold bold <u>underline bold <i>biu</i></u></b>');
+$tests[] = array('{define link url}{define l {link a}}{l b}',
+                 '<a href="a">b</a>');
+$tests[] = array('{define link url}{{link a} b}',
+                 '<a href="a">b</a>');
 
 
 /* Add more tests here. */
