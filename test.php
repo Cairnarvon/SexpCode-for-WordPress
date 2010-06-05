@@ -136,6 +136,8 @@ $tests[] = array("{code.verbatim '{a b} {c}}",
                  '<code title="a b code">{c}</code>');
 $tests[] = array("{{code '{A B C}} cod}",
                  '<code title="A B C code">cod</code>');
+$tests[] = array("{url {b x} y}",
+                 '<a href="x">y</a>');
 
 
 /* Add more tests here. */
