@@ -130,6 +130,13 @@ $tests[] = array('{define link url}{define l {link a}}{l b}',
 $tests[] = array('{define link url}{{link a} b}',
                  '<a href="a">b</a>');
 
+$tests[] = array("{code '{Algorithmic Language Scheme} (fibs 10)}",
+                 '<code title="Algorithmic Language Scheme code">(fibs 10)</code>');
+$tests[] = array("{code.verbatim '{a b} {c}}",
+                 '<code title="a b code">{c}</code>');
+$tests[] = array("{{code '{A B C}} cod}",
+                 '<code title="A B C code">cod</code>');
+
 
 /* Add more tests here. */
 

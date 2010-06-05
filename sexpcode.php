@@ -76,6 +76,36 @@ $sexpcode_tags =
                           'arity' => 1));
 
 
+function sexpcode_next_arg($input, $offset)
+{
+    /* sexpcode_next_arg :: String -> Int -> (String, Int) */
+
+    $eos = strlen($input);
+    $n = 0;
+
+    while ($offset < $eos && $input[$offset] == ' ') ++$offset;
+
+    $i = $offset;
+
+    while ($offset < $eos && ($input[$offset] != ' ' || $n != 0)) {
+        switch ($input[$offset]) {
+        case '{':
+            ++$n;
+            break;
+        case '}':
+            --$n;
+            break;
+        }
+        ++$offset;
+    }
+
+    $arg = substr($input, $i, $offset - $i);
+    $arg = str_replace(array("'{", '}'), array("", ""), $arg);
+    $arg = preg_replace("/{[^ ]+/", "", $arg);
+
+    return array($arg, $offset + 1);
+}
+
 function sexpcode_get_tags($expr, $defs)
 {
     /* sexpcode_get_tags :: String -> (String, String, Boolean) */
@@ -130,10 +160,11 @@ function sexpcode_get_tags($expr, $defs)
 
             } else return false;
 
-            $args = explode(' ', $args, $arity);
+            for ($i = 1, $j = 0; $i <= $arity; ++$i) {
+                if (($p = sexpcode_next_arg(&$args, $j)) === false) break;
+                list($arg, $j) = $p;
 
-            for ($i = 1; $i <= count($args); ++$i) {
-                $o = str_replace('%' . $i . '%', $args[$i - 1], $o);
+                $o = str_replace('%' . $i . '%', $arg, $o);
                 --$arity;
             }
             $i_start = $i;
@@ -285,16 +316,11 @@ function sexpcode_parse_sexp($string, $offset, $defs)
     list($open, $close, $verbatim, $arity) = $t;
 
     for ($i = 1; $i <= $arity; ++$i) {
-        $j = $offset;
+        if (($p = sexpcode_next_arg(&$string, $offset)) === false)
+            return array("", -1);
+        list($arg, $offset) = $p;
 
-        while ($j < $eos && $string[$j] != ' ')
-            ++$j;
-
-        if ($offset == $eos) return array("", -1);
-        $open = str_replace('%' . $i . '%',
-                            substr($string, $offset, $j - $offset),
-                            $open);
-        $offset = $j + 1;
+        $open = str_replace('%' . $i . '%', $arg, $open);
     }
 
 
