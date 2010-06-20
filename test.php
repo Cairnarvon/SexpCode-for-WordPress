@@ -139,6 +139,9 @@ $tests[] = array("{{code '{A B C}} cod}",
 $tests[] = array("{url {b x} y}",
                  '<a href="x">y</a>');
 
+$tests[] = array("{sup^3 Alternate iteration syntax.}",
+                 '<sup><sup><sup>Alternate iteration syntax.</sup></sup></sup>');
+
 
 /* Add more tests here. */
 

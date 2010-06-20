@@ -136,6 +136,7 @@ function sexpcode_get_tags($expr, $defs)
     $funcs[] = substr($expr, $j);
 
     foreach ($funcs as $func) {
+        $func = strtr($func, "^", "*");
         @list($func, $iter) = explode('*', $func);
         $iter = $iter === null ? 1 : floor($iter);
 
