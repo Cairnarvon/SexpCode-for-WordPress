@@ -142,6 +142,11 @@ $tests[] = array("{url {b x} y}",
 $tests[] = array("{sup^3 Alternate iteration syntax.}",
                  '<sup><sup><sup>Alternate iteration syntax.</sup></sup></sup>');
 
+$tests[] = array("{url javascript:alert('Hi!'); Jabaskip}",
+                '<a href="alert(\'Hi!\');">Jabaskip</a>');
+$tests[] = array("{url javascript:a javascript:a}",
+                 '<a href="a">javascript:a</a>');
+
 
 /* Add more tests here. */
 

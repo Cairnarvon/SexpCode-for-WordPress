@@ -102,6 +102,7 @@ function sexpcode_next_arg($input, $offset)
     $arg = substr($input, $i, $offset - $i);
     $arg = str_replace(array("'{", '}'), array("", ""), $arg);
     $arg = preg_replace("/{[^ ]+ /", "", $arg);
+    $arg = preg_replace("/^javascript:/", "", $arg);
 
     return array($arg, $offset + 1);
 }
