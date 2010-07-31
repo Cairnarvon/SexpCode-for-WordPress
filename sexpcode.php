@@ -394,7 +394,7 @@ function sexpcode_translate($input)
 
     }
 
-    return $out;
+    return trim($out);
 }
 
 add_filter('comment_text', 'sexpcode_translate', 50);

@@ -28,8 +28,8 @@ $tests[] = array("{b.u compound}",
                  "<b><u>compound</u></b>");
 $tests[] = array("{b.i.u Triple compound!} ",
                  "<b><i><u>Triple compound!</u></i></b> ");
-$tests[] = array(" {b.b Repeated compound }",
-                 " <b><b>Repeated compound </b></b>");
+$tests[] = array("{b.b Repeated compound }",
+                 "<b><b>Repeated compound </b></b>");
 
 $tests[] = array("Testing {sub*3 iteration!}",
                  "Testing <sub><sub><sub>iteration!</sub></sub></sub>");
@@ -95,8 +95,8 @@ $tests[] = array("{define alpha b.i.s.u}{alpha expert}",
                  "<b><i><s><u>expert</u></s></i></b>");
 $tests[] = array("{b bold} {define b i}{b actually italic}",
                  "<b>bold</b> <i>actually italic</i>");
-$tests[] = array(" {define verbatim verbatim.b}{verbatim {test}}",
-                 " <b>{test}</b>");
+$tests[] = array("{define verbatim verbatim.b}{verbatim {test}}",
+                 "<b>{test}</b>");
 $tests[] = array("{define a b}{a alpha}{define a i}{a beta}",
                  "<b>alpha</b><i>beta</i>");
 $tests[] = array("{define itsup sup*2}{b.itsup*2.i dangerous}",
@@ -146,6 +146,9 @@ $tests[] = array("{url javascript:alert('Hi!'); Jabaskip}",
                 '<a href="alert(\'Hi!\');">Jabaskip</a>');
 $tests[] = array("{url javascript:a javascript:a}",
                  '<a href="a">javascript:a</a>');
+
+$tests[] = array("{define x i}\n{define y b}\n\n{x.y Test}",
+                 "<i><b>Test</b></i>");
 
 
 /* Add more tests here. */
