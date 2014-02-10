@@ -133,7 +133,7 @@ function sexpcode_get_tags($expr, &$defs)
             --$n;
             break;
         }
-    } 
+    }
     $funcs[] = substr($expr, $j);
 
     foreach ($funcs as $func) {
@@ -198,7 +198,7 @@ function sexpcode_get_tags($expr, &$defs)
                 ++$frep_c;
             }
         }
-        
+
         $iter = min($iter, !$alias &&
                             $arity == 0 &&
                             $sexpcode_tags[$func]['iter'] ? 3 : 1);
@@ -222,7 +222,7 @@ function sexpcode_parse_sexp($string, $offset, &$defs)
 
     if ($string[$offset] != '{')
         return array("", -1); /* parser fuck-up, not syntax error */
-    
+
     ++$offset;
     $eos = strlen($string);
     global $sexpcode_tags;
@@ -294,7 +294,7 @@ function sexpcode_parse_sexp($string, $offset, &$defs)
         return array("", $offset);
     }
 
-    
+
     /* And undefinition. */
 
     if ($expr == "undefine") {
@@ -357,7 +357,7 @@ function sexpcode_parse_sexp($string, $offset, &$defs)
         ++$i;
     }
 
-    
+
     /* User omitted closing braces; close his tags. */
 
     return array($ret . substr($string, $offset) . $close, $eos);
@@ -389,7 +389,7 @@ function sexpcode_translate($input)
 
         list($parsed, $i) = sexpcode_parse_sexp($input, $i, $defs);
         if ($i < 0) return $input;
-        
+
         $out .= $parsed;
 
     }
