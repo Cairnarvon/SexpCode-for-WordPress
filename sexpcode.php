@@ -107,7 +107,7 @@ function sexpcode_next_arg($input, $offset)
     return array($arg, $offset + 1);
 }
 
-function sexpcode_get_tags($expr, $defs)
+function sexpcode_get_tags($expr, &$defs)
 {
     /* sexpcode_get_tags :: String -> (String, String, Boolean) */
 
@@ -163,7 +163,7 @@ function sexpcode_get_tags($expr, $defs)
             } else return false;
 
             for ($i = 1, $j = 0; $i <= $arity; ++$i) {
-                if (($p = sexpcode_next_arg(&$args, $j)) === false) break;
+                if (($p = sexpcode_next_arg($args, $j)) === false) break;
                 list($arg, $j) = $p;
 
                 $o = str_replace('%' . $i . '%', $arg, $o);
@@ -216,7 +216,7 @@ function sexpcode_get_tags($expr, $defs)
 }
 
 
-function sexpcode_parse_sexp($string, $offset, $defs)
+function sexpcode_parse_sexp($string, $offset, &$defs)
 {
     /* sexpcode_parse_sexp :: String -> Int -> Array -> (String, Int) */
 
@@ -288,7 +288,7 @@ function sexpcode_parse_sexp($string, $offset, $defs)
         $expr = substr($string, $offset, $i - $offset);
         $offset = $i + 1;
 
-        if (($defs[$alias] = sexpcode_get_tags($expr, &$defs)) === false)
+        if (($defs[$alias] = sexpcode_get_tags($expr, $defs)) === false)
             return array("", -1);
 
         return array("", $offset);
@@ -313,12 +313,12 @@ function sexpcode_parse_sexp($string, $offset, $defs)
 
     /* Regular function expression */
 
-    if (($t = sexpcode_get_tags($expr, &$defs)) === false)
+    if (($t = sexpcode_get_tags($expr, $defs)) === false)
         return array("", -1);
     list($open, $close, $verbatim, $arity) = $t;
 
     for ($i = 1; $i <= $arity; ++$i) {
-        if (($p = sexpcode_next_arg(&$string, $offset)) === false)
+        if (($p = sexpcode_next_arg($string, $offset)) === false)
             return array("", -1);
         list($arg, $offset) = $p;
 
@@ -344,7 +344,7 @@ function sexpcode_parse_sexp($string, $offset, $defs)
         case '{':
             if (!$verbatim) {
                 $ret .= substr($string, $offset, $i - $offset);
-                list($p, $i) = sexpcode_parse_sexp(&$string, $i, &$defs);
+                list($p, $i) = sexpcode_parse_sexp($string, $i, $defs);
 
                 if ($i < 0) return array("", -1);
 
@@ -387,7 +387,7 @@ function sexpcode_translate($input)
         $out .= substr($input, $i, $j - $i);
         $i = $j;
 
-        list($parsed, $i) = sexpcode_parse_sexp(&$input, $i, &$defs);
+        list($parsed, $i) = sexpcode_parse_sexp($input, $i, $defs);
         if ($i < 0) return $input;
         
         $out .= $parsed;
