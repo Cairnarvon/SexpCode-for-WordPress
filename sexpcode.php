@@ -3,7 +3,7 @@
 Plugin Name: SexpCode for WordPress
 Plugin URI: http://cairnarvon.rotahall.org/2010/05/25/towards-a-better-bbcode/
 Description: Enables the use of SexpCode in comments.
-Version: 1.2
+Version: 1.2.1
 Author: Koen Crolla
 Author URI: http://cairnarvon.rotahall.org/
 */
